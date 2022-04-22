@@ -1,7 +1,4 @@
-from http import client
-from pydoc import cli
-
-from matplotlib.pyplot import hot
+import csv
 import praw
 
 
@@ -11,10 +8,30 @@ reddit = praw.Reddit(client_id='EBohoWcmdN-cPi8HTOIUSw',
                      password="X890TNzsJj93",
                      user_agent="bda_sentimentv1")
 
-subreddit = reddit.subreddit('ukraine')
+subreddit = reddit.subreddit('RussiaUkraineWar2022')
+# ukraine
+# RussiaUkraineWar2022
 
+hot_ukraine = subreddit.top(limit=1000)
 
-hot_python = subreddit.hot(limit=10)
-for i in hot_python:
-    if not i.stickied and i.is_self:
-        print(i.selftext)
+with open('./ukraine_title_data.csv', 'w') as f:
+    headers = ['ID', 'Date_utc', 'Title',
+               'Number of Comments', 'Score', 'Author', 'Link', 'Flair']
+    writer = csv.DictWriter(f, fieldnames=headers,
+                            extrasaction='ignore', dialect='excel')
+    writer.writeheader()
+    for post in hot_ukraine:
+        if not post.stickied:
+            data = {
+                'ID': post.id,
+                'Date_utc': post.created_utc,
+                'Title': post.title,
+                'Number of Comments': post.num_comments,
+                'Score': post.score,
+                'Author': post.author,
+                'Link': post.permalink,
+                'Flair': post.link_flair_text
+
+            }
+            writer.writerow(data)
+    f.close()
